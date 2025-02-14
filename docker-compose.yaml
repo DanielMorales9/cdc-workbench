@@ -1,0 +1,86 @@
+services:
+  cdc_client:
+   build:
+     context: ./cdc_client
+     dockerfile: Dockerfile
+   environment:
+      JAVA_OPTIONS: "-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+      QUARKUS_LOG_LEVEL: INFO
+      LOG_LEVEL: INFO
+   ports:
+     - "8082:8081"
+   volumes:
+     - offsets:/var/offsets
+     - ./cdc_client/${PROPERTIES_TEMPLATE}.properties.template:/opt/debezium/conf/application.properties.template
+     - ${GOOGLE_APPLICATION_CREDENTIALS}:/opt/debezium/credentials.json
+   depends_on:
+     - postgres_db
+     - apicurio_registry
+     - confluent_registry
+
+  apicurio_registry:
+    image: apicurio/apicurio-registry-sql:${APICURIO_VERSION:-2.6.1.Final}
+    environment:
+      REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/registry
+      REGISTRY_DATASOURCE_USERNAME: registry
+      REGISTRY_DATASOURCE_PASSWORD: s3cr3tp4ss
+      REGISTRY_APIS_V2_DATE_FORMAT: yyyy-MM-dd'T'HH:mm:ss'Z'
+      JAVA_OPTIONS: "-XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+      QUARKUS_LOG_LEVEL: INFO
+      LOG_LEVEL: INFO
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres_db
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+      - "9093:9093"  # Internal listener
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: local
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  confluent_registry:
+    image: confluentinc/cp-schema-registry:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
+      SCHEMA_REGISTRY_HOST_NAME: "confluent_registry"
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081/
+
+  postgres_db:
+    image: postgres:${POSTGRES_VERSION:-15.7-alpine}
+    command: ["-c", "config_file=/etc/postgresql/postgresql.conf"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres_db/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./postgres_db/${INIT_SQL:-init.sql}:/docker-entrypoint-initdb.d/init.sql
+
+
+volumes:
+  pgdata: {}
+  offsets: {}
+  kafka-data: {}
