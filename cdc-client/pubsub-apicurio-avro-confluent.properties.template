@@ -11,7 +11,7 @@ debezium.source.slot.name=cdc_pub
 #debezium.source.max.batch.size=2000
 #debezium.source.max.queue.size=1000000
 
-debezium.source.database.hostname=postgres_db
+debezium.source.database.hostname=postgres-db
 debezium.source.database.port=5432
 debezium.source.database.dbname=postgres
 debezium.source.database.user=cdc
@@ -31,16 +31,8 @@ errors.max.retries=10
 quarkus.http.port=8081
 
 debezium.format.key=json
-debezium.format.value=json
 debezium.format.key.schemas.enable=false
 
-debezium.format.key.converter: io.apicurio.registry.utils.converter.ExtJsonConverter
-debezium.format.value.converter: io.apicurio.registry.utils.converter.ExtJsonConverter
-
-debezium.format.key.apicurio.registry.url=http://apicurio_registry:8080/apis/registry/v2
-debezium.format.key.apicurio.registry.auto-register=true
-debezium.format.key.apicurio.registry.find-latest=true
-
-debezium.format.value.apicurio.registry.url=http://apicurio_registry:8080/apis/registry/v2
-debezium.format.value.apicurio.registry.auto-register=true
-debezium.format.value.apicurio.registry.find-latest=true
+debezium.format.value=avro
+debezium.format.value.converter=io.confluent.connect.avro.AvroConverter
+debezium.format.value.schema.registry.url=http://apicurio-registry:8080/apis/ccompat/v7

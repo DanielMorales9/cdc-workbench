@@ -1,8 +1,15 @@
 services:
-  cdc_client:
+  cdc-client:
    build:
-     context: ./cdc_client
+     context: ./cdc-client
      dockerfile: Dockerfile
+     args:
+       DEBEZIUM_VERSION: ${DEBEZIUM_VERSION:-2.7.4.Final}
+       APICURIO_VERSION: ${APICURIO_VERSION:-2.6.1.Final}
+       CONFLUENT_VERSION: ${CONFLUENT_VERSION:-7.8.1}
+       AVRO_VERSION: ${AVRO_VERSION:-1.12.0}
+       GUAVA_VERSION: ${GUAVA_VERSION:-33.4.0-jre}
+   restart: always
    environment:
       JAVA_OPTIONS: "-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
       QUARKUS_LOG_LEVEL: INFO
@@ -11,17 +18,17 @@ services:
      - "8082:8081"
    volumes:
      - offsets:/var/offsets
-     - ./cdc_client/${PROPERTIES_TEMPLATE}.properties.template:/opt/debezium/conf/application.properties.template
+     - ./cdc-client/${PROPERTIES_TEMPLATE:-kafka-confluent-avro}.properties.template:/opt/debezium/conf/application.properties.template
      - ${GOOGLE_APPLICATION_CREDENTIALS}:/opt/debezium/credentials.json
    depends_on:
-     - postgres_db
-     - apicurio_registry
-     - confluent_registry
+     - postgres-db
+     - apicurio-registry
+     - confluent-registry
 
-  apicurio_registry:
+  apicurio-registry:
     image: apicurio/apicurio-registry-sql:${APICURIO_VERSION:-2.6.1.Final}
     environment:
-      REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/registry
+      REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/registry
       REGISTRY_DATASOURCE_USERNAME: registry
       REGISTRY_DATASOURCE_PASSWORD: s3cr3tp4ss
       REGISTRY_APIS_V2_DATE_FORMAT: yyyy-MM-dd'T'HH:mm:ss'Z'
@@ -31,10 +38,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres_db
+      - postgres-db
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-7.8.1}
     ports:
       - "9092:9092"
       - "9093:9093"  # Internal listener
@@ -54,18 +61,19 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
 
-  confluent_registry:
-    image: confluentinc/cp-schema-registry:latest
+  confluent-registry:
+    image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-7.8.1}
+    restart: always
     depends_on:
       - kafka
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
-      SCHEMA_REGISTRY_HOST_NAME: "confluent_registry"
+      SCHEMA_REGISTRY_HOST_NAME: "confluent-registry"
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081/
 
-  postgres_db:
+  postgres-db:
     image: postgres:${POSTGRES_VERSION:-15.7-alpine}
     command: ["-c", "config_file=/etc/postgresql/postgresql.conf"]
     environment:
@@ -76,9 +84,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./postgres_db/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./postgres_db/${INIT_SQL:-init.sql}:/docker-entrypoint-initdb.d/init.sql
-
+      - ./postgres-db/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./postgres-db/${INIT_SQL:-init.sql}:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   pgdata: {}

@@ -11,7 +11,7 @@ debezium.source.slot.name=cdc_pub
 #debezium.source.max.batch.size=2000
 #debezium.source.max.queue.size=1000000
 
-debezium.source.database.hostname=postgres_db
+debezium.source.database.hostname=postgres-db
 debezium.source.database.port=5432
 debezium.source.database.dbname=postgres
 debezium.source.database.user=cdc
@@ -34,7 +34,7 @@ debezium.format.value=avro
 debezium.format.key.converter.schemas.enable=true
 debezium.format.value.converter.schemas.enable=true
 
-debezium.format.key.schema.registry.url=http://confluent_registry:8081
-debezium.format.value.schema.registry.url=http://confluent_registry:8081
+debezium.format.key.schema.registry.url=http://confluent-registry:8081
+debezium.format.value.schema.registry.url=http://confluent-registry:8081
 debezium.format.key.converter=io.confluent.connect.avro.AvroConverter
 debezium.format.value.converter=io.confluent.connect.avro.AvroConverter
