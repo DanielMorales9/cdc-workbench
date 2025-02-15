@@ -16,6 +16,7 @@ maven_dep() {
     local PACKAGE="$3"
     local VERSION="$4"
     local FILE="$5"
+    local MD5HASH="$6"
 
     DOWNLOAD_FILE_TMP_PATH="/tmp/maven_dep/${PACKAGE}"
     DOWNLOAD_FILE="$DOWNLOAD_FILE_TMP_PATH/$FILE"
@@ -23,35 +24,32 @@ maven_dep() {
     test -d "$DOWNLOAD_FILE_TMP_PATH" || mkdir -p "$DOWNLOAD_FILE_TMP_PATH"
 
     URL="$REPO/$GROUP/$PACKAGE/$VERSION/$FILE"
-    CHECKSUM_URL="$URL.md5"
     curl -sfSL -o "$DOWNLOAD_FILE" "$URL"
-    curl -sfSL -o "$CHECKSUM_FILE" "$CHECKSUM_URL"
 
-    MD5HASH=$( cat "$CHECKSUM_FILE" )
     echo "$MD5HASH  $DOWNLOAD_FILE" | md5sum -c -
 }
 
 maven_confluent_dep() {
-    maven_dep "$MAVEN_REPO_CONFLUENT" "io/confluent" "$1" "$2" "$1-$2.jar"
+    maven_dep "$MAVEN_REPO_CONFLUENT" "io/confluent" "$1" "$2" "$1-$2.jar" "$3"
     mv "$DOWNLOAD_FILE" "$MAVEN_DEP_DESTINATION"
 }
 
 maven_debezium_server() {
-    maven_dep "$MAVEN_REPO_CENTRAL" "io/debezium" "debezium-server-dist" "$1" "debezium-server-dist-$1.tar.gz"
+    maven_dep "$MAVEN_REPO_CENTRAL" "io/debezium" "debezium-server-dist" "$1" "debezium-server-dist-$1.tar.gz" "$2"
     tar -xzf "$DOWNLOAD_FILE" -C "${DEBEZIUM_HOME}" --strip-components 1
     rm -f "$DOWNLOAD_FILE"
     rm -f "$CHECKSUM_FILE"
 }
 
 maven_apicurio_registry() {
-    maven_dep "$MAVEN_REPO_CENTRAL" "io/apicurio" "apicurio-registry-$1" "$2" "apicurio-registry-$1-$2.tar.gz"
+    maven_dep "$MAVEN_REPO_CENTRAL" "io/apicurio" "apicurio-registry-$1" "$2" "apicurio-registry-$1-$2.tar.gz" "$3"
     tar -xzf "$DOWNLOAD_FILE" -C "$MAVEN_DEP_DESTINATION"
     rm -f "$DOWNLOAD_FILE"
     rm -f "$CHECKSUM_FILE"
 }
 
 maven_central_deps() {
-    maven_dep "$MAVEN_REPO_CENTRAL" "$1" "$2" "$3" "$2-$3.jar"
+    maven_dep "$MAVEN_REPO_CENTRAL" "$1" "$2" "$3" "$2-$3.jar" "$4"
     mv "$DOWNLOAD_FILE" "$MAVEN_DEP_DESTINATION"
 }
 
