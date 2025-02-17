@@ -27,30 +27,28 @@ services:
       QUARKUS_LOG_LEVEL: INFO
       LOG_LEVEL: INFO
    ports:
-     - "8082:8081"
+     - "8081:8081"
    volumes:
      - offsets:/var/offsets
      - ./cdc-client/${PROPERTIES_TEMPLATE:-kafka-confluent-avro}.properties.template:/opt/debezium/conf/application.properties.template
      - ${GOOGLE_APPLICATION_CREDENTIALS}:/opt/debezium/credentials.json
    depends_on:
      - postgres-db
-     - apicurio-registry
-     - confluent-registry
 
-  apicurio-registry:
-    image: apicurio/apicurio-registry-sql:${APICURIO_VERSION:-2.6.1.Final}
-    environment:
-      REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/registry
-      REGISTRY_DATASOURCE_USERNAME: registry
-      REGISTRY_DATASOURCE_PASSWORD: s3cr3tp4ss
-      REGISTRY_APIS_V2_DATE_FORMAT: yyyy-MM-dd'T'HH:mm:ss'Z'
-      JAVA_OPTIONS: "-XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-      QUARKUS_LOG_LEVEL: INFO
-      LOG_LEVEL: INFO
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres-db
+#  apicurio-registry:
+#    image: apicurio/apicurio-registry-sql:${APICURIO_VERSION:-2.6.1.Final}
+#    environment:
+#      REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/registry
+#      REGISTRY_DATASOURCE_USERNAME: registry
+#      REGISTRY_DATASOURCE_PASSWORD: s3cr3tp4ss
+#      REGISTRY_APIS_V2_DATE_FORMAT: yyyy-MM-dd'T'HH:mm:ss'Z'
+#      JAVA_OPTIONS: "-XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+#      QUARKUS_LOG_LEVEL: INFO
+#      LOG_LEVEL: INFO
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - postgres-db
 
   kafka:
     image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-7.8.1}
@@ -74,20 +72,17 @@ services:
       - kafka-data:/var/lib/kafka/data
 
   confluent-registry:
-    image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-7.8.1}
-    restart: always
+    build:
+      context: ./confluent-registry
+      dockerfile: Dockerfile
+      args:
+        CONFLUENT_VERSION: 7.8.1
+        CONFLUENT_MINOR_VERSION: 7.8
+    restart: on-failure
     depends_on:
-      - kafka
+    - kafka
     ports:
-      - "8081:8081"
-    environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
-      SCHEMA_REGISTRY_HOST_NAME: "confluent-registry"
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081/
-      SCHEMA_REGISTRY_OPTS: -Djava.security.auth.login.config=/etc/schema-registry/jaas_config.conf
-    volumes:
-      - ./confluent-registry/schema-registry.properties:/etc/schema-registry/schema-registry.properties
-      - ./confluent-registry/jaas_config.conf:/etc/schema-registry/jaas_config.conf
+    - "8082:8082"
 
   postgres-db:
     image: postgres:${POSTGRES_VERSION:-15.7-alpine}
