@@ -1,4 +1,4 @@
-FROM eu.gcr.io/revolut-labs/revolut-java:17
+FROM openjdk:17-jdk-slim
 
 
 ARG DEBEZIUM_VERSION
