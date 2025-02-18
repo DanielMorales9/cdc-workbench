@@ -47,7 +47,7 @@ Replication lag
 ```sql
 SELECT pg_current_wal_lsn() - restart_lsn AS replication_lag_bytes
 FROM pg_replication_slots
-WHERE slot_name = 'cdc_slot';
+WHERE slot_name = 'cdc_pub';
 ```
 
 List of mapping publications and table

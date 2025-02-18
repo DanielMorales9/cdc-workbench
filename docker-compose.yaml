@@ -3,27 +3,9 @@ services:
    build:
      context: ./cdc-client
      dockerfile: Dockerfile
-     args:
-       DEBEZIUM_VERSION: ${DEBEZIUM_VERSION:-2.7.4.Final}
-       DEBEZIUM_MD5: ${DEBEZIUM_VERSION:-ee41a08c0f1fdee842ebcd5741a14491}
-       APICURIO_VERSION: ${APICURIO_VERSION:-2.6.1.Final}
-       APICURIO_MD5: ${APICURIO_MD5:-20033eaa37a51dcf259ccb04fcc6d4a5}
-       CONFLUENT_VERSION: ${CONFLUENT_VERSION:-7.8.1}
-       KAFKA_CONNECT_AVRO_CONVERTER_MD5: ${KAFKA_CONNECT_AVRO_CONVERTER_MD5:-1e9ff78804abba3cb5ed9d23047a55d5}
-       KAFKA_CONNECT_AVRO_DATA_MD5: ${KAFKA_CONNECT_AVRO_DATA_MD5:-13e17f33d7386b0ae77f113a4d5115f1}
-       KAFKA_AVRO_SERIALIZER_MD5: ${KAFKA_AVRO_SERIALIZER_MD5:-2b9508add35fbb2c14cff77bc411d007}
-       KAFKA_SCHEMA_SERIALIZER_MD5: ${KAFKA_SCHEMA_SERIALIZER_MD5:-37f44bc65608ed58f9202490517babe9}
-       KAFKA_SCHEMA_CONVERTER_MD5: ${KAFKA_SCHEMA_CONVERTER_MD5:-e6dc75e29397e33f25b193b0be60499a}
-       KAFKA_SCHEMA_REGISTRY_CLIENT_MD5: ${KAFKA_SCHEMA_REGISTRY_CLIENT_MD5:-3cb92923e8d0b97cb1353a688008085c}
-       CONFLUENT_COMMON_CONFIG_MD5: ${CONFLUENT_COMMON_CONFIG_MD5:-fb72e67c913f4708b143370569daf9e5}
-       CONFLUENT_COMMON_UTILS_MD5: ${CONFLUENT_COMMON_UTILS_MD5:-e2ee3debd960bcc7dbaf1daa0d3931eb}
-       AVRO_VERSION: ${AVRO_VERSION:-1.12.0}
-       AVRO_MD5: ${AVRO_MD5:-21fa3115ff1dc131ca6432bc73927fa5}
-       GUAVA_VERSION: ${GUAVA_VERSION:-33.4.0-jre}
-       GUAVA_MD5: ${GUAVA_MD5:-5732af16367192820c7bf177e9b29512}
    restart: always
    environment:
-      JAVA_OPTIONS: "-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+      JAVA_OPTS: "-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
       QUARKUS_LOG_LEVEL: INFO
       LOG_LEVEL: INFO
    ports:
@@ -32,6 +14,7 @@ services:
      - offsets:/var/offsets
      - ./cdc-client/${PROPERTIES_TEMPLATE:-kafka-confluent-avro}.properties.template:/opt/debezium/conf/application.properties.template
      - ${GOOGLE_APPLICATION_CREDENTIALS}:/opt/debezium/credentials.json
+     - ./secrets/confluent-registry.certificate.pem:/opt/debezium/confluent-registry.certificate.pem
    depends_on:
      - postgres-db
 
@@ -75,14 +58,15 @@ services:
     build:
       context: ./confluent-registry
       dockerfile: Dockerfile
-      args:
-        CONFLUENT_VERSION: 7.8.1
-        CONFLUENT_MINOR_VERSION: 7.8
-    restart: on-failure
+    restart: always
     depends_on:
     - kafka
+    volumes:
+    - ./confluent-registry/schema-registry.properties:/etc/schema-registry/schema-registry.properties
+    - ./secrets/confluent-registry.keystore.jks:/etc/schema-registry/confluent-registry.keystore.jks
+    - ./secrets/confluent-registry.truststore.jks:/etc/schema-registry/confluent-registry.truststore.jks
     ports:
-    - "8082:8082"
+    - "8443:8443"
 
   postgres-db:
     image: postgres:${POSTGRES_VERSION:-15.7-alpine}

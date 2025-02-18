@@ -1,3 +1,12 @@
 .idea/
 
-secrets/
+*.crt
+*.csr
+*_creds
+*.jks
+*.srl
+*.key
+*.pem
+*.der
+*.p12
+*.log
