@@ -21,7 +21,7 @@ debezium.source.table.include.list=public.pgbench_accounts,public.pgbench_branch
 debezium.source.topic.prefix=test
 
 debezium.sink.type=pubsub
-debezium.sink.pubsub.project.id=revolut-dev-etl
+debezium.sink.pubsub.project.id=your-project
 debezium.sink.pubsub.wait.message.delivery.timeout.ms=90000
 debezium.sink.pubsub.batch.element.count.threshold=100
 debezium.sink.pubsub.ordering.enabled=true
