@@ -18,21 +18,6 @@ services:
    depends_on:
      - postgres-db
 
-#  apicurio-registry:
-#    image: apicurio/apicurio-registry-sql:${APICURIO_VERSION:-2.6.1.Final}
-#    environment:
-#      REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/registry
-#      REGISTRY_DATASOURCE_USERNAME: registry
-#      REGISTRY_DATASOURCE_PASSWORD: s3cr3tp4ss
-#      REGISTRY_APIS_V2_DATE_FORMAT: yyyy-MM-dd'T'HH:mm:ss'Z'
-#      JAVA_OPTIONS: "-XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-#      QUARKUS_LOG_LEVEL: INFO
-#      LOG_LEVEL: INFO
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - postgres-db
-
   kafka:
     image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-7.8.1}
     ports:
