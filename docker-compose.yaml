@@ -12,7 +12,7 @@ services:
      - "8081:8081"
    volumes:
      - offsets:/var/offsets
-     - ./cdc-client/${PROPERTIES_TEMPLATE:-kafka-confluent-avro}.properties.template:/opt/debezium/conf/application.properties.template
+     - ./cdc-client/${PROPERTIES_TEMPLATE:-pubsub-confluent-avro}.properties.template:/opt/debezium/conf/application.properties.template
      - ${GOOGLE_APPLICATION_CREDENTIALS}:/opt/debezium/credentials.json
      - ./secrets/confluent-registry.certificate.pem:/opt/debezium/confluent-registry.certificate.pem
    depends_on:
@@ -51,7 +51,7 @@ services:
     - ./secrets/confluent-registry.keystore.jks:/etc/schema-registry/confluent-registry.keystore.jks
     - ./secrets/confluent-registry.truststore.jks:/etc/schema-registry/confluent-registry.truststore.jks
     ports:
-    - "8443:8443"
+    - "8080:8080"
 
   postgres-db:
     image: postgres:${POSTGRES_VERSION:-15.7-alpine}

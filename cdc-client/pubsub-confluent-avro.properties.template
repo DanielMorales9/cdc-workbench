@@ -24,15 +24,15 @@ debezium.sink.type=pubsub
 debezium.sink.pubsub.project.id=<your-project>
 debezium.sink.pubsub.wait.message.delivery.timeout.ms=90000
 debezium.sink.pubsub.batch.element.count.threshold=100
-debezium.sink.pubsub.ordering.enabled=true
 
 quarkus.log.console.json=false
 errors.max.retries=10
 quarkus.http.port=8081
 
 debezium.format.key=json
+debezium.format.value=json
 debezium.format.key.schemas.enable=false
 
-debezium.format.value=avro
+debezium.format.value.schema.registry.url=http://confluent-registry:8080
 debezium.format.value.converter=io.confluent.connect.avro.AvroConverter
-debezium.format.value.schema.registry.url=http://apicurio-registry:8080/apis/ccompat/v7
+

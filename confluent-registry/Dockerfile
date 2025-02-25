@@ -1,10 +1,10 @@
 FROM openjdk:17-jdk-slim
 
-ENV CONFLUENT_VERSION=7.8.1
-ENV CONFLUENT_MINOR_VERSION=7.8
+ENV CONFLUENT_VERSION=7.7.0
+ENV CONFLUENT_MINOR_VERSION=7.7
 ENV CONFLUENT_URL=https://packages.confluent.io
 ENV CONFLUENT_TMP=/tmp/confluent
-ENV SCHEMA_REGISTRY_OPTS="-Djava.security.auth.login.config=/etc/schema-registry/jaas_config.conf"
+#ENV SCHEMA_REGISTRY_OPTS="-Djava.security.auth.login.config=/etc/schema-registry/jaas_config.conf"
 
 ENV SCHEMA_REGISTRY_HOME=/opt/schema-registry
 

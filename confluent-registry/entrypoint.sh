@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 pushd "$SCHEMA_REGISTRY_HOME"
 
