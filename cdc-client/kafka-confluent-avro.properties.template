@@ -32,16 +32,21 @@ quarkus.http.port=8081
 debezium.format.key=avro
 debezium.format.value=avro
 
-debezium.format.key.schema.registry.url=https://confluent-registry:8443
+debezium.format.key.schema.registry.url=http://confluent-registry:8080
 # debezium.format.key.basic.auth.credentials.source=USER_INFO
 # debezium.format.key.basic.auth.user.info=client:password
 debezium.format.key.converter=io.confluent.connect.avro.AvroConverter
 # debezium.format.key.schema.registry.ssl.truststore.location=/opt/debezium/confluent-registry.certificate.pem
 # debezium.format.key.schema.registry.ssl.truststore.type=PEM
 
-debezium.format.value.schema.registry.url=https://confluent-registry:8080
+debezium.format.value.schema.registry.url=http://confluent-registry:8080
 debezium.format.value.converter=io.confluent.connect.avro.AvroConverter
 # debezium.format.value.basic.auth.credentials.source=USER_INFO
 # debezium.format.value.basic.auth.user.info=client:password
 # debezium.format.value.schema.registry.ssl.truststore.location=/opt/debezium/confluent-registry.certificate.pem
 # debezium.format.value.schema.registry.ssl.truststore.type=PEM
+
+debezium.transforms=route
+debezium.transforms.route.type=org.apache.kafka.connect.transforms.RegexRouter
+debezium.transforms.route.regex=test\.(.*)
+debezium.transforms.route.replacement=shard.$1

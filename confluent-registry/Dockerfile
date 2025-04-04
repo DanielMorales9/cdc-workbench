@@ -28,9 +28,6 @@ RUN CONFLUENT_URL=https://packages.confluent.io \
     && mv $CONFLUENT_TMP/release-and-dependencies/dependency/*.jar $GCP_KAFKA_AUTH_HOME/ \
     && rm -r $CONFLUENT_TMP
 
-COPY jaas_config.conf $SCHEMA_REGISTRY_HOME/etc/schema-registry/
-COPY password-file $SCHEMA_REGISTRY_HOME/etc/schema-registry/
-COPY schema-registry.properties $SCHEMA_REGISTRY_HOME/etc/schema-registry/
 COPY entrypoint.sh /bin/
 
 ENTRYPOINT ["/bin/entrypoint.sh"]
